@@ -4,79 +4,79 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function sw_page_messengers() {
     if ( ! current_user_can( 'manage_options' ) ) return;
 
-    if ( isset($_POST['sw_messengers_nonce']) && wp_verify_nonce($_POST['sw_messengers_nonce'],'sw_save_messengers') ) {
+    if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( $_POST['sw_messengers_nonce'], 'sw_save_messengers' ) ) {
         $all    = sw_default_messengers();
         $posted = $_POST['messengers'] ?? [];
         $save   = [];
         foreach ( $all as $key => $def ) {
-            $p = $posted[$key] ?? [];
-            $save[$key] = [
-                'enabled' => !empty($p['enabled']) ? 1 : 0,
-                'url'     => sanitize_text_field($p['url'] ?? ''),
-                'order'   => intval($p['order'] ?? $def['order']),
+            $p = $posted[ $key ] ?? [];
+            $save[ $key ] = [
+                'enabled' => ! empty( $p['enabled'] ) ? 1 : 0,
+                'url'     => sanitize_text_field( $p['url'] ?? '' ),
+                'order'   => intval( $p['order'] ?? $def['order'] ),
             ];
         }
         update_option( SW_OPT_MESSENGERS, $save );
-        echo '<div class="notice notice-success is-dismissible"><p>Messengers saved.</p></div>';
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( sw_t( 'admin.messengers_saved' ) ) . '</p></div>';
     }
 
     $messengers = sw_get_messengers_config();
-    uasort( $messengers, fn($a,$b) => $a['order'] <=> $b['order'] );
+    uasort( $messengers, fn( $a, $b ) => $a['order'] <=> $b['order'] );
 
     $placeholders = [
-        'instagram'=>'https://instagram.com/yourname',
-        'telegram' =>'https://t.me/yourname',
-        'messenger'=>'https://m.me/yourpagename',
-        'whatsapp' =>'https://wa.me/380XXXXXXXXX',
-        'viber'    =>'viber://chat?number=+380XXXXXXXXX',
-        'facebook' =>'https://facebook.com/yourpage',
-        'tiktok'   =>'https://tiktok.com/@yourname',
-        'twitter'  =>'https://x.com/yourname',
-        'linkedin' =>'https://linkedin.com/company/yourcompany',
-        'email'    =>'mailto:hello@yourdomain.com',
+        'instagram' => 'https://instagram.com/yourname',
+        'telegram'  => 'https://t.me/yourname',
+        'messenger' => 'https://m.me/yourpagename',
+        'whatsapp'  => 'https://wa.me/380XXXXXXXXX',
+        'viber'     => 'viber://chat?number=+380XXXXXXXXX',
+        'facebook'  => 'https://facebook.com/yourpage',
+        'tiktok'    => 'https://tiktok.com/@yourname',
+        'twitter'   => 'https://x.com/yourname',
+        'linkedin'  => 'https://linkedin.com/company/yourcompany',
+        'email'     => 'mailto:hello@yourdomain.com',
     ];
     ?>
     <div class="wrap sw-admin">
-        <h1>Social Widget — Messengers</h1>
-        <p class="description" style="margin-bottom:16px;">Enable messengers and add your links. Drag rows to change order.</p>
+        <h1><?php echo esc_html( sw_t( 'admin.messengers_title' ) ); ?></h1>
+        <p class="description" style="margin-bottom:16px;"><?php echo esc_html( sw_t( 'admin.messengers_desc' ) ); ?></p>
 
         <form method="post" id="sw-form">
-            <?php wp_nonce_field('sw_save_messengers','sw_messengers_nonce'); ?>
+            <?php wp_nonce_field( 'sw_save_messengers', 'sw_messengers_nonce' ); ?>
             <table class="wp-list-table widefat fixed striped" id="sw-sortable">
                 <thead><tr>
                     <th style="width:32px;"></th>
-                    <th style="width:40px;">Icon</th>
-                    <th style="width:130px;">Messenger</th>
-                    <th>URL / Link</th>
-                    <th style="width:80px;">Enabled</th>
-                    <th style="width:60px;">Order</th>
+                    <th style="width:40px;"><?php echo esc_html( sw_t( 'admin.col_icon' ) ); ?></th>
+                    <th style="width:130px;"><?php echo esc_html( sw_t( 'admin.col_messenger' ) ); ?></th>
+                    <th><?php echo esc_html( sw_t( 'admin.col_url' ) ); ?></th>
+                    <th style="width:80px;"><?php echo esc_html( sw_t( 'admin.col_enabled' ) ); ?></th>
+                    <th style="width:60px;"><?php echo esc_html( sw_t( 'admin.col_order' ) ); ?></th>
                 </tr></thead>
                 <tbody>
                 <?php foreach ( $messengers as $key => $m ) : ?>
                 <tr class="sw-row">
                     <td class="sw-handle" title="Drag to reorder">&#9776;</td>
                     <td><?php echo $m['svg']; ?></td>
-                    <td><strong><?php echo esc_html($m['label']); ?></strong></td>
-                    <td><input type="text" name="messengers[<?php echo esc_attr($key); ?>][url]"
-                        value="<?php echo esc_attr($m['url']); ?>"
-                        placeholder="<?php echo esc_attr($placeholders[$key]??''); ?>"
+                    <td><strong><?php echo esc_html( $m['label'] ); ?></strong></td>
+                    <td><input type="text" name="messengers[<?php echo esc_attr( $key ); ?>][url]"
+                        value="<?php echo esc_attr( $m['url'] ); ?>"
+                        placeholder="<?php echo esc_attr( $placeholders[ $key ] ?? '' ); ?>"
                         style="width:100%;max-width:400px;"></td>
                     <td><label class="sw-toggle-label">
-                        <input type="checkbox" name="messengers[<?php echo esc_attr($key); ?>][enabled]"
-                            value="1" <?php checked($m['enabled'],1); ?>>
+                        <input type="checkbox" name="messengers[<?php echo esc_attr( $key ); ?>][enabled]"
+                            value="1" <?php checked( $m['enabled'], 1 ); ?>>
                         <span class="sw-toggle-switch"></span>
                     </label></td>
                     <td>
-                        <input type="hidden" name="messengers[<?php echo esc_attr($key); ?>][order]"
-                            value="<?php echo esc_attr($m['order']); ?>" class="sw-order">
-                        <span class="sw-order-num"><?php echo esc_html($m['order']); ?></span>
+                        <input type="hidden" name="messengers[<?php echo esc_attr( $key ); ?>][order]"
+                            value="<?php echo esc_attr( $m['order'] ); ?>" class="sw-order">
+                        <span class="sw-order-num"><?php echo esc_html( $m['order'] ); ?></span>
                     </td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
-            <p style="margin-top:12px;color:#646970;font-size:13px;">Tip: messenger shows only if enabled AND has a URL.</p>
-            <?php submit_button('Save Messengers'); ?>
+            <p style="margin-top:12px;color:#646970;font-size:13px;"><?php echo esc_html( sw_t( 'admin.messengers_tip' ) ); ?></p>
+            <?php submit_button( sw_t( 'admin.save_messengers' ) ); ?>
         </form>
     </div>
 

@@ -6,6 +6,8 @@
     var animation   = cfg.animation || 'fade';
     var bubbleOn    = cfg.bubble_enabled || false;
     var bubbleDelay = cfg.bubble_delay || 3000;
+    var ajaxUrl     = cfg.ajax_url || '';
+    var nonce       = cfg.nonce   || '';
 
     var widget  = document.getElementById('sw-widget');
     var toggle  = document.getElementById('sw-toggle');
@@ -14,6 +16,31 @@
     var slides  = widget ? widget.querySelectorAll('.sw-slide') : [];
 
     if (!widget || !toggle || !list) return;
+
+    /* ── Tracking ── */
+    function track(type, messenger) {
+        if (!ajaxUrl || !nonce) return;
+        var data = new FormData();
+        data.append('action', 'sw_track');
+        data.append('nonce', nonce);
+        data.append('type', type);
+        if (messenger) data.append('messenger', messenger);
+        try {
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon(ajaxUrl, data);
+            } else {
+                fetch(ajaxUrl, { method: 'POST', body: data, keepalive: true });
+            }
+        } catch (e) {}
+    }
+
+    track('view');
+
+    list.querySelectorAll('.sw-item').forEach(function (link) {
+        link.addEventListener('click', function () {
+            track('click', this.dataset.messenger || '');
+        });
+    });
 
     /* ── Carousel ── */
     var currentSlide = 0;

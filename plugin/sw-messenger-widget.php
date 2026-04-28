@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Social Widget by psibot.com
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
- * Version:     1.0.1
+ * Version:     1.0.2
  * Author:      psibot.com
  * Author URI:  https://psibot.com
  * License:     GPL-2.0-or-later
@@ -12,45 +12,78 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SW_VERSION',         '1.0.1' );
+define( 'SW_VERSION',         '1.0.2' );
+define( 'SW_DB_VERSION',      '1.0.2' );
 define( 'SW_DIR',             plugin_dir_path( __FILE__ ) );
 define( 'SW_URL',             plugin_dir_url( __FILE__ ) );
 define( 'SW_OPT_GENERAL',    'sw_general_settings' );
 define( 'SW_OPT_MESSENGERS', 'sw_messengers' );
 
 if ( is_admin() ) {
+    require_once SW_DIR . 'admin/dashboard.php';
     require_once SW_DIR . 'admin/settings.php';
     require_once SW_DIR . 'admin/messengers.php';
     add_action( 'admin_menu', 'sw_register_menu' );
 }
 
 function sw_register_menu() {
-    add_menu_page( 'Social Widget', 'Social Widget', 'manage_options', 'sw-messenger-widget', 'sw_page_settings', 'dashicons-share', 80 );
-    add_submenu_page( 'sw-messenger-widget', 'General Settings', 'General', 'manage_options', 'sw-messenger-widget', 'sw_page_settings' );
-    add_submenu_page( 'sw-messenger-widget', 'Messengers', 'Messengers', 'manage_options', 'sw-messenger-widget-messengers', 'sw_page_messengers' );
+    add_menu_page( sw_t( 'admin.menu_title' ), sw_t( 'admin.menu_title' ), 'manage_options', 'sw-messenger-widget', 'sw_page_dashboard', 'dashicons-share', 80 );
+    add_submenu_page( 'sw-messenger-widget', sw_t( 'admin.dashboard' ),  sw_t( 'admin.dashboard' ),  'manage_options', 'sw-messenger-widget',           'sw_page_dashboard' );
+    add_submenu_page( 'sw-messenger-widget', sw_t( 'admin.messengers' ), sw_t( 'admin.messengers' ), 'manage_options', 'sw-messenger-widget-messengers', 'sw_page_messengers' );
+    add_submenu_page( 'sw-messenger-widget', sw_t( 'admin.settings' ),   sw_t( 'admin.settings' ),   'manage_options', 'sw-messenger-widget-settings',   'sw_page_settings' );
+}
+
+/* ── AJAX Tracking ── */
+add_action( 'wp_ajax_sw_track',        'sw_ajax_track' );
+add_action( 'wp_ajax_nopriv_sw_track', 'sw_ajax_track' );
+
+function sw_ajax_track() {
+    if ( ! check_ajax_referer( 'sw_track_nonce', 'nonce', false ) ) {
+        wp_die( '0' );
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'sw_stats';
+
+    if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
+        wp_die( '0' );
+    }
+
+    $type      = in_array( $_POST['type'] ?? '', [ 'view', 'click' ], true ) ? $_POST['type'] : '';
+    $messenger = sanitize_key( $_POST['messenger'] ?? '' );
+
+    if ( ! $type ) wp_die( '0' );
+
+    $wpdb->insert(
+        $table,
+        [
+            'type'       => $type,
+            'messenger'  => ( $type === 'click' && $messenger ) ? $messenger : null,
+            'created_at' => current_time( 'mysql' ),
+        ],
+        [ '%s', '%s', '%s' ]
+    );
+
+    wp_die( '1' );
 }
 
 /* ── Frontend ── */
 add_action( 'wp_enqueue_scripts', 'sw_enqueue' );
 
 // Try all possible hooks — Flatsome uses wp_footer but some themes skip it
-add_action( 'wp_footer',     'sw_render_widget', 100 );
+add_action( 'wp_footer',    'sw_render_widget', 100 );
 add_action( 'wp_body_open', 'sw_render_widget', 100 );
-add_action( 'shutdown',      'sw_render_via_ob', 0 );
+add_action( 'shutdown',     'sw_render_via_ob', 0 );
 
-// Output buffering fallback — catches cases where no hook fires
 function sw_render_via_ob() {
-    // Only use this if widget hasn't been rendered yet
-    if ( ! defined('SW_RENDERED') && ! is_admin() && ! wp_doing_ajax() ) {
-        // We can't inject into already-sent output here safely,
-        // so this is just a safety no-op placeholder
+    if ( ! defined( 'SW_RENDERED' ) && ! is_admin() && ! wp_doing_ajax() ) {
+        // Safety no-op placeholder
     }
 }
 
 $GLOBALS['sw_rendered'] = false;
 
 function sw_render_widget() {
-    // Prevent double render if multiple hooks fire
     if ( ! empty( $GLOBALS['sw_rendered'] ) ) return;
 
     $g = sw_get_general();
@@ -63,12 +96,12 @@ function sw_render_widget() {
     $position      = $g['position'] ?? 'right';
     $offset_side   = intval( $g['offset_side'] ?? 20 );
     $offset_bottom = intval( $g['offset_bottom'] ?? 20 );
-    $bubble_text   = esc_html( $g['bubble_text'] ?? 'Hi! How can we help?' );
+    $bubble_text   = esc_html( $g['bubble_text'] ?: sw_t( 'frontend.bubble_default' ) );
     $bubble_on     = ! empty( $g['bubble_enabled'] );
     $side_prop     = ( $position === 'left' ) ? 'left' : 'right';
     ?>
-    <div id="sw-widget" data-position="<?php echo esc_attr($position); ?>"
-         style="position:fixed;<?php echo esc_attr($side_prop); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position==='left'?'flex-start':'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+    <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
+         style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 
         <?php if ( $bubble_on ) : ?>
         <div id="sw-bubble" class="sw-bubble" style="display:none;">
@@ -79,11 +112,12 @@ function sw_render_widget() {
 
         <div id="sw-list" class="sw-list" aria-hidden="true">
             <?php foreach ( $messengers as $m ) : ?>
-            <a href="<?php echo esc_url($m['url']); ?>" class="sw-item"
+            <a href="<?php echo esc_url( $m['url'] ); ?>" class="sw-item"
+               data-messenger="<?php echo esc_attr( $m['key'] ?? '' ); ?>"
                target="_blank" rel="noopener noreferrer"
-               aria-label="<?php echo esc_attr($m['label']); ?>">
+               aria-label="<?php echo esc_attr( $m['label'] ); ?>">
                 <span class="sw-item-icon"><?php echo $m['svg']; ?></span>
-                <span class="sw-item-label"><?php echo esc_html($m['label']); ?></span>
+                <span class="sw-item-label"><?php echo esc_html( $m['label'] ); ?></span>
             </a>
             <?php endforeach; ?>
         </div>
@@ -111,31 +145,83 @@ function sw_enqueue() {
     wp_enqueue_style(  'sw-messenger-widget', SW_URL . 'assets/widget.css', [], SW_VERSION );
     wp_enqueue_script( 'sw-messenger-widget', SW_URL . 'assets/widget.js',  [], SW_VERSION, true );
     wp_localize_script( 'sw-messenger-widget', 'SW_CONFIG', [
-        'carousel_interval' => (float)( $g['carousel_interval'] ?? 1.5 ) * 1000,
+        'carousel_interval' => (float) ( $g['carousel_interval'] ?? 1.5 ) * 1000,
         'animation'         => $g['animation'] ?? 'fade',
         'position'          => $g['position'] ?? 'right',
         'bubble_enabled'    => ! empty( $g['bubble_enabled'] ),
-        'bubble_delay'      => (float)( $g['bubble_delay'] ?? 3 ) * 1000,
-    ]);
+        'bubble_delay'      => (float) ( $g['bubble_delay'] ?? 3 ) * 1000,
+        'ajax_url'          => admin_url( 'admin-ajax.php' ),
+        'nonce'             => wp_create_nonce( 'sw_track_nonce' ),
+    ] );
 }
 
 /* ── Helpers ── */
+
+function sw_t( $key ) {
+    static $cache = [];
+
+    $opts = get_option( SW_OPT_GENERAL, [] );
+    $lang = $opts['language'] ?? 'en';
+    if ( ! in_array( $lang, [ 'en', 'uk', 'ru' ], true ) ) {
+        $lang = 'en';
+    }
+
+    if ( ! isset( $cache[ $lang ] ) ) {
+        $file = SW_DIR . 'languages/' . $lang . '.json';
+        $cache[ $lang ] = file_exists( $file )
+            ? ( json_decode( file_get_contents( $file ), true ) ?: [] )
+            : [];
+    }
+
+    $parts = explode( '.', $key );
+    $val   = $cache[ $lang ];
+    foreach ( $parts as $part ) {
+        if ( ! isset( $val[ $part ] ) ) {
+            if ( $lang !== 'en' ) {
+                if ( ! isset( $cache['en'] ) ) {
+                    $f = SW_DIR . 'languages/en.json';
+                    $cache['en'] = file_exists( $f )
+                        ? ( json_decode( file_get_contents( $f ), true ) ?: [] )
+                        : [];
+                }
+                $v = $cache['en'];
+                foreach ( $parts as $p ) {
+                    if ( ! isset( $v[ $p ] ) ) return $key;
+                    $v = $v[ $p ];
+                }
+                return is_string( $v ) ? $v : $key;
+            }
+            return $key;
+        }
+        $val = $val[ $part ];
+    }
+    return is_string( $val ) ? $val : $key;
+}
+
 function sw_get_general() {
     return wp_parse_args( get_option( SW_OPT_GENERAL, [] ), [
-        'enabled' => 1, 'position' => 'right', 'offset_side' => 20,
-        'offset_bottom' => 20, 'carousel_interval' => 1.5, 'animation' => 'fade',
-        'bubble_enabled' => 1, 'bubble_text' => 'Hi! How can we help?', 'bubble_delay' => 3,
-    ]);
+        'enabled'           => 1,
+        'position'          => 'right',
+        'offset_side'       => 20,
+        'offset_bottom'     => 20,
+        'carousel_interval' => 1.5,
+        'animation'         => 'fade',
+        'bubble_enabled'    => 1,
+        'bubble_text'       => '',
+        'bubble_delay'      => 3,
+        'language'          => 'en',
+    ] );
 }
 
 function sw_get_messengers_config() {
     $defaults = sw_default_messengers();
     $saved    = get_option( SW_OPT_MESSENGERS, [] );
     foreach ( $defaults as $key => &$def ) {
-        if ( isset( $saved[$key] ) ) {
-            $def['enabled'] = !empty( $saved[$key]['enabled'] );
-            $def['url']     = $saved[$key]['url'] ?? '';
-            $def['order']   = isset( $saved[$key]['order'] ) ? intval( $saved[$key]['order'] ) : $def['order'];
+        $def['key'] = $key;
+        if ( isset( $saved[ $key ] ) ) {
+            $def['enabled'] = ! empty( $saved[ $key ]['enabled'] );
+            $def['url']     = $saved[ $key ]['url'] ?? '';
+            $def['order']   = isset( $saved[ $key ]['order'] ) ? intval( $saved[ $key ]['order'] ) : $def['order'];
         }
     }
     return $defaults;
@@ -143,27 +229,60 @@ function sw_get_messengers_config() {
 
 function sw_get_active_messengers() {
     $all    = sw_get_messengers_config();
-    $active = array_filter( $all, fn($m) => !empty($m['enabled']) && !empty($m['url']) );
-    usort( $active, fn($a,$b) => $a['order'] <=> $b['order'] );
+    $active = array_filter( $all, fn( $m ) => ! empty( $m['enabled'] ) && ! empty( $m['url'] ) );
+    usort( $active, fn( $a, $b ) => $a['order'] <=> $b['order'] );
     return array_values( $active );
 }
 
 function sw_default_messengers() {
-    return [
-        'instagram' => ['label'=>'Instagram','url'=>'','enabled'=>0,'order'=>1,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><defs><radialGradient id="ig1" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#ffd879"/><stop offset="25%" stop-color="#f9a040"/><stop offset="45%" stop-color="#f2703f"/><stop offset="65%" stop-color="#e2437e"/><stop offset="85%" stop-color="#bf3baf"/><stop offset="100%" stop-color="#7b41c4"/></radialGradient></defs><rect width="32" height="32" rx="8" fill="url(#ig1)"/><rect x="6" y="6" width="20" height="20" rx="5.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="4.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="22.5" cy="9.5" r="1.3" fill="#fff"/></svg>'],
-        'telegram'  => ['label'=>'Telegram','url'=>'','enabled'=>0,'order'=>2,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#2AABEE"/><path d="M6 16l14.5-7L19 26l-4.5-4-3 2.5V20l8-8-10 5.5L6 16z" fill="#fff"/></svg>'],
-        'messenger' => ['label'=>'Messenger','url'=>'','enabled'=>0,'order'=>3,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><defs><linearGradient id="ms1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#00B2FF"/><stop offset="100%" stop-color="#006AFF"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#ms1)"/><path d="M16 5C9.9 5 5 9.6 5 15.2c0 3 1.4 5.7 3.7 7.5V26l3.4-1.9c.9.3 1.9.4 2.9.4 6.1 0 11-4.6 11-10.3C26 9.6 22.1 5 16 5z" fill="#fff"/><path d="M9.5 18l4.5-4.8 2.8 2.8 4.2-2.8" fill="none" stroke="#006AFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'],
-        'whatsapp'  => ['label'=>'WhatsApp','url'=>'','enabled'=>0,'order'=>4,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#25D366"/><path d="M16 6A10 10 0 0 0 7.4 21.2L6 26l4.9-1.3A10 10 0 1 0 16 6z" fill="#fff"/><path d="M12 12.5c.4 1 1.4 3 2.8 4.4s3.4 2.4 4.4 2.8c.3.1.6 0 .7-.2l1-1.2c.2-.3.5-.3.8-.1l2.4 1.2c.3.2.4.5.3.8-.4 1.2-1.5 2.5-2.7 2.7-1.2.3-3-.1-5.6-2.1-2.6-1.9-4.1-4.4-4.5-5.7-.4-1.3.2-2.7 1.1-3.1.3-.1.7 0 .8.3l1.2 2.5c.2.2 0 .6-.1.7l-1.2 1z" fill="#25D366"/></svg>'],
-        'viber'     => ['label'=>'Viber','url'=>'','enabled'=>0,'order'=>5,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#7360F2"/><path d="M16 5c-4.8 0-8.8 3.4-8.8 7.9 0 2.5 1.2 4.7 3.1 6.2v3l2.7-1.5c1 .3 2 .4 3 .4 4.8 0 8.8-3.5 8.8-8C24.8 8.4 20.8 5 16 5z" fill="#fff"/><path d="M19 19.5c-.3 0-1.3-.4-2-.7a9.5 9.5 0 0 1-2-1.4 9.5 9.5 0 0 1-1.4-2c-.3-.7-.7-1.7-.7-2 0-.4.3-.7.5-.9l.6-.6c.2-.2.5-.2.7 0l1.3 1.9c.2.2.2.5 0 .7l-.7.7a5.5 5.5 0 0 0 1 1.4 5.5 5.5 0 0 0 1.4 1l.7-.7c.2-.2.5-.2.7 0l1.9 1.3c.3.2.3.5.1.7l-.6.6c-.2.2-.3.3-.5 0z" fill="#7360F2"/></svg>'],
-        'facebook'  => ['label'=>'Facebook','url'=>'','enabled'=>0,'order'=>6,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#1877F2"/><path d="M21 5h-3.3C14.9 5 13 7 13 9.8V12h-3v4h3v11h4V16h3l.5-4H17v-2c0-.7.3-1 1.1-1H21V5z" fill="#fff"/></svg>'],
-        'tiktok'    => ['label'=>'TikTok','url'=>'','enabled'=>0,'order'=>7,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#010101"/><path d="M22 8.5c-1.4 0-2.6-.8-3.2-2H15v13a2.3 2.3 0 1 1-1.6-2.2v-3.4A5.8 5.8 0 1 0 19 19.5V13c1.2.8 2.6 1.3 4 1.3V11a5 5 0 0 1-1-.5z" fill="#fff"/></svg>'],
-        'twitter'   => ['label'=>'X / Twitter','url'=>'','enabled'=>0,'order'=>8,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#000"/><path d="M23 6h-3.2L16 11.2 12.5 6H7l6.5 9.2L7 26h3.2l4-5.5 3.8 5.5H24l-6.8-9.5L23 6z" fill="#fff"/></svg>'],
-        'linkedin'  => ['label'=>'LinkedIn','url'=>'','enabled'=>0,'order'=>9,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#0A66C2"/><path d="M9 12h3.5v11H9V12zm1.7-1.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM15 12h3.3v1.5c.7-1.1 1.9-1.7 3.2-1.7 2.8 0 4 1.9 4 4.5V23h-3.3v-6c0-1.4-.5-2.3-1.8-2.3-1.4 0-2.2 1-2.2 2.7V23H15V12z" fill="#fff"/></svg>'],
-        'email'     => ['label'=>'Email','url'=>'','enabled'=>0,'order'=>10,'svg'=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="8" fill="#EA4335"/><rect x="5" y="9" width="22" height="15" rx="2.5" fill="#fff"/><path d="M5 10.5l11 7.5 11-7.5" fill="none" stroke="#EA4335" stroke-width="2" stroke-linecap="round"/></svg>'],
+    $icons_dir = SW_DIR . 'assets/icons/';
+
+    $items = [
+        'instagram' => [ 'label' => 'Instagram',   'order' => 1  ],
+        'telegram'  => [ 'label' => 'Telegram',    'order' => 2  ],
+        'messenger' => [ 'label' => 'Messenger',   'order' => 3  ],
+        'whatsapp'  => [ 'label' => 'WhatsApp',    'order' => 4  ],
+        'viber'     => [ 'label' => 'Viber',       'order' => 5  ],
+        'facebook'  => [ 'label' => 'Facebook',    'order' => 6  ],
+        'tiktok'    => [ 'label' => 'TikTok',      'order' => 7  ],
+        'twitter'   => [ 'label' => 'X / Twitter', 'order' => 8  ],
+        'linkedin'  => [ 'label' => 'LinkedIn',    'order' => 9  ],
+        'email'     => [ 'label' => 'Email',       'order' => 10 ],
     ];
+
+    foreach ( $items as $key => &$item ) {
+        $item['url']     = '';
+        $item['enabled'] = 0;
+        $item['svg']     = file_get_contents( $icons_dir . $key . '.svg' ) ?: '';
+    }
+
+    return $items;
 }
 
-register_activation_hook( __FILE__, function() {
+/* ── DB setup ── */
+
+function sw_install_db() {
+    global $wpdb;
+    $charset = $wpdb->get_charset_collate();
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta( "CREATE TABLE {$wpdb->prefix}sw_stats (
+  id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  type varchar(10) NOT NULL,
+  messenger varchar(50) DEFAULT NULL,
+  created_at datetime NOT NULL,
+  PRIMARY KEY  (id),
+  KEY type_created (type,created_at)
+) {$charset};" );
+    update_option( 'sw_db_version', SW_DB_VERSION );
     if ( false === get_option( SW_OPT_GENERAL ) )    add_option( SW_OPT_GENERAL, [] );
     if ( false === get_option( SW_OPT_MESSENGERS ) ) add_option( SW_OPT_MESSENGERS, [] );
-});
+}
+
+// Runs on every load — creates/upgrades the table when version changes
+add_action( 'plugins_loaded', function () {
+    if ( get_option( 'sw_db_version' ) !== SW_DB_VERSION ) {
+        sw_install_db();
+    }
+} );
+
+register_activation_hook( __FILE__, 'sw_install_db' );
