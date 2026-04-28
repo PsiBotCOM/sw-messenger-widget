@@ -125,7 +125,6 @@
 #sw-widget[data-position="left"] .sw-bubble {
     border-radius: 18px 18px 18px 0;
     margin-right: 0;
-    margin-left: 20px;
 }
 
 @keyframes sw-bubble-in {

@@ -39,8 +39,8 @@ function sw_page_settings() {
                         </label>
                     </td></tr>
                     <tr><th><?php echo esc_html( sw_t( 'admin.position' ) ); ?></th><td>
-                        <label><input type="radio" name="position" value="right" <?php checked( $g['position'], 'right' ); ?>> <?php echo esc_html( sw_t( 'admin.position_right' ) ); ?></label> &nbsp;
                         <label><input type="radio" name="position" value="left"  <?php checked( $g['position'], 'left' );  ?>> <?php echo esc_html( sw_t( 'admin.position_left' ) ); ?></label>
+                        <label><input type="radio" name="position" value="right" <?php checked( $g['position'], 'right' ); ?>> <?php echo esc_html( sw_t( 'admin.position_right' ) ); ?></label> &nbsp;
                     </td></tr>
                     <tr><th><?php echo esc_html( sw_t( 'admin.offset_side' ) ); ?></th><td>
                         <input type="number" name="offset_side" value="<?php echo esc_attr( $g['offset_side'] ); ?>" min="0" max="200" class="small-text"> px
