@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Social Widget by psibot.com
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
- * Version:     1.0.2
+ * Version:     1.0.3
  * Author:      psibot.com
  * Author URI:  https://psibot.com
  * License:     GPL-2.0-or-later
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SW_VERSION',         '1.0.2' );
+define( 'SW_VERSION',         '1.0.3' );
 define( 'SW_DB_VERSION',      '1.0.2' );
 define( 'SW_DIR',             plugin_dir_path( __FILE__ ) );
 define( 'SW_URL',             plugin_dir_url( __FILE__ ) );
@@ -103,13 +103,6 @@ function sw_render_widget() {
     <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
          style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
 
-        <?php if ( $bubble_on ) : ?>
-        <div id="sw-bubble" class="sw-bubble" style="display:none;">
-            <button class="sw-bubble-close" aria-label="Close">&#x2715;</button>
-            <span><?php echo $bubble_text; ?></span>
-        </div>
-        <?php endif; ?>
-
         <div id="sw-list" class="sw-list" aria-hidden="true">
             <?php foreach ( $messengers as $m ) : ?>
             <a href="<?php echo esc_url( $m['url'] ); ?>" class="sw-item"
@@ -122,16 +115,25 @@ function sw_render_widget() {
             <?php endforeach; ?>
         </div>
 
-        <button id="sw-toggle" class="sw-toggle" aria-label="Open messenger list" aria-expanded="false">
-            <span id="sw-carousel" class="sw-carousel">
-                <?php foreach ( $messengers as $idx => $m ) : ?>
-                <span class="sw-slide<?php echo $idx === 0 ? ' active' : ''; ?>">
-                    <?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?>
+        <div class="sw-launcher">
+            <?php if ( $bubble_on ) : ?>
+            <div id="sw-bubble" class="sw-bubble" style="display:none;">
+                <span><?php echo $bubble_text; ?></span>
+                <button class="sw-bubble-close" aria-label="Close">&#x2715;</button>
+            </div>
+            <?php endif; ?>
+
+            <button id="sw-toggle" class="sw-toggle" aria-label="Open messenger list" aria-expanded="false">
+                <span id="sw-carousel" class="sw-carousel">
+                    <?php foreach ( $messengers as $idx => $m ) : ?>
+                    <span class="sw-slide<?php echo $idx === 0 ? ' active' : ''; ?>">
+                        <?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?>
+                    </span>
+                    <?php endforeach; ?>
                 </span>
-                <?php endforeach; ?>
-            </span>
-            <span id="sw-close-icon" class="sw-close-icon">&#x2715;</span>
-        </button>
+                <span id="sw-close-icon" class="sw-close-icon">&#x2715;</span>
+            </button>
+        </div>
     </div>
     <?php
 }
