@@ -144,8 +144,11 @@ function sw_enqueue() {
     $messengers = sw_get_active_messengers();
     if ( empty( $messengers ) ) return;
 
-    wp_enqueue_style(  'sw-messenger-widget', SW_URL . 'assets/widget.css', [], SW_VERSION );
-    wp_enqueue_script( 'sw-messenger-widget', SW_URL . 'assets/widget.js',  [], SW_VERSION, true );
+    $css_version = file_exists( SW_DIR . 'assets/widget.css' ) ? filemtime( SW_DIR . 'assets/widget.css' ) : SW_VERSION;
+    $js_version  = file_exists( SW_DIR . 'assets/widget.js' ) ? filemtime( SW_DIR . 'assets/widget.js' ) : SW_VERSION;
+
+    wp_enqueue_style(  'sw-messenger-widget', SW_URL . 'assets/widget.css', [], $css_version );
+    wp_enqueue_script( 'sw-messenger-widget', SW_URL . 'assets/widget.js',  [], $js_version, true );
     wp_localize_script( 'sw-messenger-widget', 'SW_CONFIG', [
         'carousel_interval' => (float) ( $g['carousel_interval'] ?? 1.5 ) * 1000,
         'animation'         => $g['animation'] ?? 'fade',
