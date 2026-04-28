@@ -55,7 +55,7 @@ function sw_page_messengers() {
                 <?php foreach ( $messengers as $key => $m ) : ?>
                 <tr class="sw-row">
                     <td class="sw-handle" title="Drag to reorder">&#9776;</td>
-                    <td><?php echo $m['svg']; ?></td>
+                    <td class="sw-icon-cell"><?php echo sw_get_messenger_icon_html( $m, 'sw-admin-icon' ); ?></td>
                     <td><strong><?php echo esc_html( $m['label'] ); ?></strong></td>
                     <td><input type="text" name="messengers[<?php echo esc_attr( $key ); ?>][url]"
                         value="<?php echo esc_attr( $m['url'] ); ?>"
@@ -82,6 +82,8 @@ function sw_page_messengers() {
 
     <style>
     .sw-admin table td{vertical-align:middle;padding:9px 8px;}
+    .sw-icon-cell{line-height:0;}
+    .sw-admin-icon{width:32px;height:32px;display:block;object-fit:contain;}
     .sw-handle{cursor:grab;color:#aaa;font-size:18px;text-align:center;}
     .sw-handle:active{cursor:grabbing;}
     .sw-row.sw-dragging{opacity:.5;background:#f0f6fc!important;}

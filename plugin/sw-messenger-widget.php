@@ -116,7 +116,7 @@ function sw_render_widget() {
                data-messenger="<?php echo esc_attr( $m['key'] ?? '' ); ?>"
                target="_blank" rel="noopener noreferrer"
                aria-label="<?php echo esc_attr( $m['label'] ); ?>">
-                <span class="sw-item-icon"><?php echo $m['svg']; ?></span>
+                <span class="sw-item-icon"><?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?></span>
                 <span class="sw-item-label"><?php echo esc_html( $m['label'] ); ?></span>
             </a>
             <?php endforeach; ?>
@@ -126,7 +126,7 @@ function sw_render_widget() {
             <span id="sw-carousel" class="sw-carousel">
                 <?php foreach ( $messengers as $idx => $m ) : ?>
                 <span class="sw-slide<?php echo $idx === 0 ? ' active' : ''; ?>">
-                    <?php echo $m['svg']; ?>
+                    <?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?>
                 </span>
                 <?php endforeach; ?>
             </span>
@@ -234,8 +234,25 @@ function sw_get_active_messengers() {
     return array_values( $active );
 }
 
+function sw_get_messenger_icon_html( $messenger, $class = 'sw-icon-img', $alt = null ) {
+    $icon_url = $messenger['icon_url'] ?? '';
+    if ( ! $icon_url ) {
+        return '';
+    }
+
+    $alt_text = null === $alt ? ( $messenger['label'] ?? '' ) : $alt;
+
+    return sprintf(
+        '<img class="%s" src="%s" alt="%s" loading="lazy" decoding="async">',
+        esc_attr( $class ),
+        esc_url( $icon_url ),
+        esc_attr( $alt_text )
+    );
+}
+
 function sw_default_messengers() {
     $icons_dir = SW_DIR . 'assets/icons/';
+    $icons_url = SW_URL . 'assets/icons/';
 
     $items = [
         'instagram' => [ 'label' => 'Instagram',   'order' => 1  ],
@@ -253,6 +270,7 @@ function sw_default_messengers() {
     foreach ( $items as $key => &$item ) {
         $item['url']     = '';
         $item['enabled'] = 0;
+        $item['icon_url'] = $icons_url . $key . '.svg';
         $item['svg']     = file_get_contents( $icons_dir . $key . '.svg' ) ?: '';
     }
 

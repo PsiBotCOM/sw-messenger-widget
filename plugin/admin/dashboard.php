@@ -106,11 +106,11 @@ function sw_page_dashboard() {
                 foreach ( $clicks_by_messenger as $row ) :
                     $key   = $row['messenger'];
                     $label = $messengers_config[ $key ]['label'] ?? $key;
-                    $svg   = $messengers_config[ $key ]['svg']   ?? '';
+                    $icon  = sw_get_messenger_icon_html( $messengers_config[ $key ] ?? [], 'sw-dashboard-icon' );
                     $pct   = $max_cnt > 0 ? (int) round( $row['cnt'] / $max_cnt * 100 ) : 0;
                 ?>
                 <div class="sw-ms-row">
-                    <div class="sw-ms-icon"><?php echo $svg; ?></div>
+                    <div class="sw-ms-icon"><?php echo $icon; ?></div>
                     <div class="sw-ms-name"><?php echo esc_html( $label ); ?></div>
                     <div class="sw-ms-bar-wrap"><div class="sw-ms-bar" style="width:<?php echo $pct; ?>%"></div></div>
                     <div class="sw-ms-count"><?php echo (int) $row['cnt']; ?></div>
@@ -150,7 +150,7 @@ function sw_page_dashboard() {
     .sw-ms-stats{display:flex;flex-direction:column;gap:8px;}
     .sw-ms-row{display:flex;align-items:center;gap:12px;padding:4px 0;}
     .sw-ms-icon{width:32px;height:32px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
-    .sw-ms-icon svg{width:32px;height:32px;display:block;}
+    .sw-dashboard-icon{width:32px;height:32px;display:block;object-fit:contain;}
     .sw-ms-name{width:110px;font-size:13px;font-weight:500;}
     .sw-ms-bar-wrap{flex:1;height:14px;background:#f0f0f0;border-radius:7px;overflow:hidden;}
     .sw-ms-bar{height:100%;background:#f0a500;border-radius:7px;transition:width .3s ease;}

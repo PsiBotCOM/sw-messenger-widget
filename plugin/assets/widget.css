@@ -39,6 +39,7 @@
     pointer-events: none;
 }
 .sw-slide.active { opacity: 1; }
+.sw-slide img { width: 32px; height: 32px; display: block; object-fit: contain; }
 
 /* Slide anim variant */
 .sw-anim-slide .sw-slide { transform: translateY(8px); transition: opacity .35s ease, transform .35s ease; }
@@ -79,7 +80,7 @@
 .sw-item:hover { box-shadow:0 4px 18px rgba(0,0,0,.2); }
 
 .sw-item-icon { width:32px; height:32px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-.sw-item-icon svg { width:32px; height:32px; display:block; }
+.sw-item-icon img { width:32px; height:32px; display:block; object-fit:contain; }
 
 .sw-list.is-open               { pointer-events:auto; }
 .sw-list.is-open .sw-item      { opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
