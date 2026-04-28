@@ -14,6 +14,7 @@ function sw_page_settings() {
             'animation'         => in_array( $_POST['animation'] ?? '', [ 'fade', 'slide' ] ) ? $_POST['animation'] : 'fade',
             'bubble_enabled'    => ! empty( $_POST['bubble_enabled'] ) ? 1 : 0,
             'bubble_text'       => sanitize_text_field( $_POST['bubble_text'] ?? '' ),
+            'bubble_font_size'  => max( 10, min( 40, intval( $_POST['bubble_font_size'] ?? 15 ) ) ),
             'bubble_delay'      => max( 0, floatval( str_replace( ',', '.', $_POST['bubble_delay'] ?? 3 ) ) ),
             'language'          => in_array( $_POST['language'] ?? '', [ 'en', 'uk', 'ru' ] ) ? $_POST['language'] : 'en',
         ] );
@@ -80,6 +81,9 @@ function sw_page_settings() {
                         <input type="text" name="bubble_text" value="<?php echo esc_attr( $g['bubble_text'] ); ?>"
                                placeholder="<?php echo esc_attr( sw_t( 'frontend.bubble_default' ) ); ?>"
                                class="regular-text">
+                    </td></tr>
+                    <tr><th><?php echo esc_html( sw_t( 'admin.bubble_font_size' ) ); ?></th><td>
+                        <input type="number" name="bubble_font_size" value="<?php echo esc_attr( $g['bubble_font_size'] ); ?>" min="10" max="40" class="small-text"> px
                     </td></tr>
                     <tr><th><?php echo esc_html( sw_t( 'admin.appear_delay' ) ); ?></th><td>
                         <input type="number" name="bubble_delay" value="<?php echo esc_attr( $g['bubble_delay'] ); ?>" min="0" max="60" step="0.5" class="small-text"> <?php echo esc_html( sw_t( 'admin.appear_delay_suffix' ) ); ?>

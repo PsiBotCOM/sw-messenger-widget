@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Social Widget by psibot.com
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
- * Version:     1.0.3
+ * Version:     1.0.2
  * Author:      psibot.com
  * Author URI:  https://psibot.com
  * License:     GPL-2.0-or-later
@@ -12,7 +12,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SW_VERSION',         '1.0.3' );
+define( 'SW_VERSION',         '1.0.2' );
 define( 'SW_DB_VERSION',      '1.0.2' );
 define( 'SW_DIR',             plugin_dir_path( __FILE__ ) );
 define( 'SW_URL',             plugin_dir_url( __FILE__ ) );
@@ -97,11 +97,12 @@ function sw_render_widget() {
     $offset_side   = intval( $g['offset_side'] ?? 20 );
     $offset_bottom = intval( $g['offset_bottom'] ?? 20 );
     $bubble_text   = esc_html( $g['bubble_text'] ?: sw_t( 'frontend.bubble_default' ) );
+    $bubble_font_size = max( 10, min( 40, intval( $g['bubble_font_size'] ?? 15 ) ) );
     $bubble_on     = ! empty( $g['bubble_enabled'] );
     $side_prop     = ( $position === 'left' ) ? 'left' : 'right';
     ?>
     <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
-         style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+         style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sw-bubble-font-size:<?php echo $bubble_font_size; ?>px;">
 
         <div id="sw-list" class="sw-list" aria-hidden="true">
             <?php foreach ( $messengers as $m ) : ?>
@@ -119,7 +120,6 @@ function sw_render_widget() {
             <?php if ( $bubble_on ) : ?>
             <div id="sw-bubble" class="sw-bubble" style="display:none;">
                 <span><?php echo $bubble_text; ?></span>
-                <button class="sw-bubble-close" aria-label="Close">&#x2715;</button>
             </div>
             <?php endif; ?>
 
@@ -210,6 +210,7 @@ function sw_get_general() {
         'animation'         => 'fade',
         'bubble_enabled'    => 1,
         'bubble_text'       => '',
+        'bubble_font_size'  => 15,
         'bubble_delay'      => 3,
         'language'          => 'en',
     ] );

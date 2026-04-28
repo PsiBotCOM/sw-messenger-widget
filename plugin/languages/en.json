@@ -30,6 +30,7 @@
     "enable_bubble": "Enable bubble",
     "show_bubble_text": "Show text bubble next to button",
     "bubble_text": "Bubble text",
+    "bubble_font_size": "Bubble text size",
     "appear_delay": "Appear delay (sec)",
     "appear_delay_suffix": "seconds after page load",
     "language": "Language",

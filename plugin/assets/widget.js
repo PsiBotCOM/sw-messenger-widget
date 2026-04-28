@@ -122,22 +122,10 @@
 
     /* ── Bubble ── */
     if (bubble && bubbleOn) {
-        var BUBBLE_KEY = 'sw_bubble_closed';
-
-        if (!localStorage.getItem(BUBBLE_KEY)) {
-            setTimeout(function () {
-                if (!isOpen) {
-                    bubble.style.display = '';
-                }
-            }, bubbleDelay);
-        }
-
-        var closeBtn = bubble.querySelector('.sw-bubble-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function () {
-                bubble.style.display = 'none';
-                try { localStorage.setItem(BUBBLE_KEY, '1'); } catch(e){}
-            });
-        }
+        setTimeout(function () {
+            if (!isOpen) {
+                bubble.style.display = '';
+            }
+        }, bubbleDelay);
     }
 })();
