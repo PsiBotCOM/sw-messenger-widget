@@ -64,7 +64,7 @@ function sw_page_messengers() {
                         <th style="width:40px;"><?php echo esc_html( sw_t( 'admin.col_icon' ) ); ?></th>
                         <th style="width:170px;"><?php echo esc_html( sw_t( 'admin.col_label' ) ); ?></th>
                         <th><?php echo esc_html( sw_t( 'admin.col_url' ) ); ?></th>
-                        <th style="width:44px;"></th>
+                        <th class="sw-delete-col"></th>
                     </tr></thead>
                     <tbody id="sw-tbody">
                     <?php if ( empty( $list ) ) : ?>
@@ -86,7 +86,7 @@ function sw_page_messengers() {
                                 <input type="text"   name="messengers[<?php echo absint( $i ); ?>][label]" value="<?php echo esc_attr( $label ); ?>" class="sw-label-input">
                             </td>
                             <td><input type="text" name="messengers[<?php echo absint( $i ); ?>][url]" value="<?php echo esc_attr( $url ); ?>" placeholder="<?php echo esc_attr( $ph ); ?>" class="sw-url-input"></td>
-                            <td>
+                            <td class="sw-delete-cell">
                                 <button type="button" class="sw-delete-btn" title="<?php echo esc_attr( sw_t( 'admin.delete' ) ); ?>">
                                     <?php
                                     $allowed_svg = [
@@ -136,7 +136,10 @@ function sw_page_messengers() {
     .sw-label-input { width: 100%; max-width: 150px; }
     .sw-url-input { width: 100%; max-width: 400px; }
     .sw-empty-msg { text-align: center; color: #999; padding: 20px !important; font-style: italic; }
-    .sw-delete-btn { background: none; border: none; cursor: pointer; color: #b32d2e; padding: 5px; line-height: 0; border-radius: 4px; display: inline-flex; align-items: center; }
+    .sw-delete-col { width: 56px; }
+    .sw-admin table td.sw-delete-cell { padding: 0 8px; text-align: center; overflow: visible; }
+    .sw-delete-btn { width: 30px; height: 30px; background: none; border: none; cursor: pointer; color: #b32d2e; padding: 0; line-height: 1; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+    .sw-delete-btn svg { width: 16px; height: 16px; display: block; flex: 0 0 auto; overflow: visible; }
     .sw-delete-btn:hover { background: #fbeaea; }
 
     .sw-admin .sw-card { background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 1px 20px 20px; margin-bottom: 20px; }
@@ -265,7 +268,7 @@ function sw_page_messengers() {
                     '<input type="text" name="messengers[' + idx + '][label]" value="' + escAttr(label) + '" class="sw-label-input">' +
                 '</td>' +
                 '<td><input type="text" name="messengers[' + idx + '][url]" value="' + escAttr(url) + '" placeholder="' + escAttr(ph) + '" class="sw-url-input"></td>' +
-                '<td>' + TRASH_BTN + '</td>';
+                '<td class="sw-delete-cell">' + TRASH_BTN + '</td>';
             return tr;
         }
 
