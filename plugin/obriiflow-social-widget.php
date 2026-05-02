@@ -124,7 +124,7 @@ function sw_render_widget() {
         ],
     ];
     ?>
-    <div id="sw-widget" class="<?php echo $show_labels ? '' : 'sw-widget-no-labels'; ?>" data-position="<?php echo esc_attr( $position ); ?>"
+    <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
          style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo absint( $offset_side ); ?>px;bottom:<?php echo absint( $offset_bottom ); ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sw-bubble-font-size:<?php echo absint( $bubble_font_size ); ?>px;">
 
         <div id="sw-list" class="sw-list<?php echo $show_labels ? '' : ' sw-no-labels'; ?>" aria-hidden="true">

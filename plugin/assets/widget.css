@@ -80,13 +80,6 @@
     pointer-events: none;
 }
 #sw-widget[data-position="left"] .sw-list { align-items: flex-start; }
-#sw-widget.sw-widget-no-labels {
-    width: 60px !important;
-    align-items: center !important;
-}
-#sw-widget.sw-widget-no-labels .sw-list {
-    align-items: center;
-}
 
 .sw-item {
     display: flex; align-items: center; gap: 10px;
