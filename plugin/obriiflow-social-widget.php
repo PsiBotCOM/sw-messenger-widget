@@ -58,7 +58,7 @@ function sw_ajax_track() {
     if ( ! $type ) wp_die( '0' );
 
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- AJAX tracking insert, caching not applicable
-    $wpdb->insert(
+    $inserted = $wpdb->insert(
         $table,
         [
             'type'       => $type,
@@ -67,6 +67,13 @@ function sw_ajax_track() {
         ],
         [ '%s', '%s', '%s' ]
     );
+
+    if ( false !== $inserted ) {
+        wp_cache_delete( 'scw_total_views' );
+        wp_cache_delete( 'scw_total_clicks' );
+        wp_cache_delete( 'scw_clicks_by_messenger' );
+        wp_cache_delete( 'scw_daily_rows' );
+    }
 
     wp_die( '1' );
 }

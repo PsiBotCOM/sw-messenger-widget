@@ -15,20 +15,22 @@ function sw_page_dashboard() {
     }
 
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-    $total_views = (int) wp_cache_get( 'scw_total_views' );
+    $total_views = wp_cache_get( 'scw_total_views' );
     if ( false === $total_views ) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
         $total_views = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'view' ) );
         wp_cache_set( 'scw_total_views', $total_views, '', 300 );
     }
+    $total_views = (int) $total_views;
 
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-    $total_clicks = (int) wp_cache_get( 'scw_total_clicks' );
+    $total_clicks = wp_cache_get( 'scw_total_clicks' );
     if ( false === $total_clicks ) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
         $total_clicks = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'click' ) );
         wp_cache_set( 'scw_total_clicks', $total_clicks, '', 300 );
     }
+    $total_clicks = (int) $total_clicks;
 
     // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     $clicks_by_messenger = wp_cache_get( 'scw_clicks_by_messenger' );
