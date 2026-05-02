@@ -7,7 +7,6 @@
  * Author:      obriiflow.com
  * Author URI:  https://obriiflow.com
  * License:     GPL-2.0-or-later
- * Update URI: false
  * Text Domain: obriiflow-social-widget
  */
 
