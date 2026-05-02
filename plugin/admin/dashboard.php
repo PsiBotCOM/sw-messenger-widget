@@ -13,13 +13,19 @@ function sw_page_dashboard() {
         return;
     }
 
-    $total_views  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE type = 'view'" );
-    $total_clicks = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE type = 'click'" );
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
+    $total_views  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'view' ) );
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
+    $total_clicks = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'click' ) );
 
+    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
     $clicks_by_messenger = $wpdb->get_results(
-        "SELECT messenger, COUNT(*) as cnt FROM `{$table}`
-         WHERE type = 'click' AND messenger IS NOT NULL AND messenger != ''
-         GROUP BY messenger ORDER BY cnt DESC",
+        $wpdb->prepare(
+            "SELECT messenger, COUNT(*) as cnt FROM `{$table}`
+             WHERE type = %s AND messenger IS NOT NULL AND messenger != ''
+             GROUP BY messenger ORDER BY cnt DESC",
+            'click'
+        ),
         ARRAY_A
     );
 
@@ -103,14 +109,25 @@ function sw_page_dashboard() {
             <div class="sw-ms-stats">
                 <?php
                 $max_cnt = max( array_column( $clicks_by_messenger, 'cnt' ) );
+                $allowed_img = [
+                    'img' => [
+                        'class'    => true,
+                        'src'      => true,
+                        'alt'      => true,
+                        'loading'  => true,
+                        'decoding' => true,
+                        'width'    => true,
+                        'height'   => true,
+                    ],
+                ];
                 foreach ( $clicks_by_messenger as $row ) :
-                    $key   = $row['messenger'];
-                    $label = $messengers_config[ $key ]['label'] ?? $key;
-                    $icon  = sw_get_messenger_icon_html( $messengers_config[ $key ] ?? [], 'sw-dashboard-icon' );
-                    $pct   = $max_cnt > 0 ? (int) round( $row['cnt'] / $max_cnt * 100 ) : 0;
+                    $ms_key = $row['messenger'];
+                    $label  = $messengers_config[ $ms_key ]['label'] ?? $ms_key;
+                    $icon   = sw_get_messenger_icon_html( $messengers_config[ $ms_key ] ?? [], 'sw-dashboard-icon' );
+                    $pct    = $max_cnt > 0 ? (int) round( $row['cnt'] / $max_cnt * 100 ) : 0;
                 ?>
                 <div class="sw-ms-row">
-                    <div class="sw-ms-icon"><?php echo $icon; ?></div>
+                    <div class="sw-ms-icon"><?php echo wp_kses( $icon, $allowed_img ); ?></div>
                     <div class="sw-ms-name"><?php echo esc_html( $label ); ?></div>
                     <div class="sw-ms-bar-wrap"><div class="sw-ms-bar" style="width:<?php echo $pct; ?>%"></div></div>
                     <div class="sw-ms-count"><?php echo (int) $row['cnt']; ?></div>
