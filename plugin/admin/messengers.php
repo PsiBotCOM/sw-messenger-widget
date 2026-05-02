@@ -4,9 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function sw_page_messengers() {
     if ( ! current_user_can( 'manage_options' ) ) return;
 
-    if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( $_POST['sw_messengers_nonce'], 'sw_save_messengers' ) ) {
+    if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['sw_messengers_nonce'] ), 'sw_save_messengers' ) ) {
         $defaults = sw_default_messengers();
-        $posted   = $_POST['messengers'] ?? [];
+        $posted   = isset( $_POST['messengers'] ) ? wp_unslash( $_POST['messengers'] ) : [];
         $save     = [];
         foreach ( $posted as $entry ) {
             $key   = sanitize_key( $entry['key'] ?? '' );
@@ -72,18 +72,26 @@ function sw_page_messengers() {
                             $label = ( $entry['label'] ?? '' ) !== '' ? $entry['label'] : $defaults[ $key ]['label'];
                             $url   = $entry['url'] ?? '';
                             $ph    = $placeholders[ $key ] ?? '';
+                            $allowed_img = [ 'img' => [ 'class' => true, 'src' => true, 'alt' => true, 'loading' => true, 'decoding' => true ] ];
                         ?>
                         <tr class="sw-row" draggable="true">
                             <td class="sw-handle" title="Drag to reorder">&#9776;</td>
-                            <td class="sw-icon-cell"><?php echo sw_get_messenger_icon_html( $defaults[ $key ], 'sw-admin-icon' ); ?></td>
+                            <td class="sw-icon-cell"><?php echo wp_kses( sw_get_messenger_icon_html( $defaults[ $key ], 'sw-admin-icon' ), $allowed_img ); ?></td>
                             <td>
-                                <input type="hidden" name="messengers[<?php echo $i; ?>][key]" value="<?php echo esc_attr( $key ); ?>">
-                                <input type="text"   name="messengers[<?php echo $i; ?>][label]" value="<?php echo esc_attr( $label ); ?>" class="sw-label-input">
+                                <input type="hidden" name="messengers[<?php echo absint( $i ); ?>][key]" value="<?php echo esc_attr( $key ); ?>">
+                                <input type="text"   name="messengers[<?php echo absint( $i ); ?>][label]" value="<?php echo esc_attr( $label ); ?>" class="sw-label-input">
                             </td>
-                            <td><input type="text" name="messengers[<?php echo $i; ?>][url]" value="<?php echo esc_attr( $url ); ?>" placeholder="<?php echo esc_attr( $ph ); ?>" class="sw-url-input"></td>
+                            <td><input type="text" name="messengers[<?php echo absint( $i ); ?>][url]" value="<?php echo esc_attr( $url ); ?>" placeholder="<?php echo esc_attr( $ph ); ?>" class="sw-url-input"></td>
                             <td>
                                 <button type="button" class="sw-delete-btn" title="<?php echo esc_attr( sw_t( 'admin.delete' ) ); ?>">
-                                    <?php echo $trash_svg; ?>
+                                    <?php
+                                    $allowed_svg = [
+                                        'svg'      => [ 'xmlns' => true, 'width' => true, 'height' => true, 'viewBox' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true ],
+                                        'polyline' => [ 'points' => true ],
+                                        'path'     => [ 'd' => true ],
+                                    ];
+                                    echo wp_kses( $trash_svg, $allowed_svg );
+                                    ?>
                                 </button>
                             </td>
                         </tr>

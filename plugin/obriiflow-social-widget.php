@@ -49,7 +49,9 @@ function sw_ajax_track() {
         wp_die( '0' );
     }
 
-    $type      = in_array( $_POST['type'] ?? '', [ 'view', 'click' ], true ) ? $_POST['type'] : '';
+    $type      = in_array( wp_unslash( $_POST['type'] ?? '' ), [ 'view', 'click' ], true )
+        ? sanitize_key( wp_unslash( $_POST['type'] ) )
+        : '';
     $messenger = sanitize_key( $_POST['messenger'] ?? '' );
 
     if ( ! $type ) wp_die( '0' );
@@ -101,9 +103,20 @@ function sw_render_widget() {
     $bubble_on     = ! empty( $g['bubble_enabled'] );
     $show_labels   = ! empty( $g['show_labels'] );
     $side_prop     = ( $position === 'left' ) ? 'left' : 'right';
+    $allowed_img   = [
+        'img' => [
+            'class'    => true,
+            'src'      => true,
+            'alt'      => true,
+            'loading'  => true,
+            'decoding' => true,
+            'width'    => true,
+            'height'   => true,
+        ],
+    ];
     ?>
     <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
-         style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sw-bubble-font-size:<?php echo $bubble_font_size; ?>px;">
+         style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo absint( $offset_side ); ?>px;bottom:<?php echo absint( $offset_bottom ); ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sw-bubble-font-size:<?php echo absint( $bubble_font_size ); ?>px;">
 
         <div id="sw-list" class="sw-list<?php echo $show_labels ? '' : ' sw-no-labels'; ?>" aria-hidden="true">
             <?php foreach ( $messengers as $m ) : ?>
@@ -111,7 +124,7 @@ function sw_render_widget() {
                data-messenger="<?php echo esc_attr( $m['key'] ?? '' ); ?>"
                target="_blank" rel="noopener noreferrer"
                aria-label="<?php echo esc_attr( $m['label'] ); ?>">
-                <span class="sw-item-icon"><?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?></span>
+                <span class="sw-item-icon"><?php echo wp_kses( sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ), $allowed_img ); ?></span>
                 <?php if ( $show_labels ) : ?><span class="sw-item-label"><?php echo esc_html( $m['label'] ); ?></span><?php endif; ?>
             </a>
             <?php endforeach; ?>
@@ -128,7 +141,7 @@ function sw_render_widget() {
                 <span id="sw-carousel" class="sw-carousel">
                     <?php foreach ( $messengers as $idx => $m ) : ?>
                     <span class="sw-slide<?php echo $idx === 0 ? ' active' : ''; ?>">
-                        <?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?>
+                        <?php echo wp_kses( sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ), $allowed_img ); ?>
                     </span>
                     <?php endforeach; ?>
                 </span>

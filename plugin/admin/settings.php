@@ -4,20 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function sw_page_settings() {
     if ( ! current_user_can( 'manage_options' ) ) return;
 
-    if ( isset( $_POST['sw_settings_nonce'] ) && wp_verify_nonce( $_POST['sw_settings_nonce'], 'sw_save_settings' ) ) {
+    if ( isset( $_POST['sw_settings_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['sw_settings_nonce'] ), 'sw_save_settings' ) ) {
         update_option( SW_OPT_GENERAL, [
             'enabled'           => ! empty( $_POST['enabled'] ) ? 1 : 0,
-            'position'          => in_array( $_POST['position'] ?? '', [ 'left', 'right' ] ) ? $_POST['position'] : 'right',
+            'position'          => in_array( wp_unslash( $_POST['position'] ?? '' ), [ 'left', 'right' ] ) ? sanitize_key( wp_unslash( $_POST['position'] ) ) : 'right',
             'offset_side'       => intval( $_POST['offset_side'] ?? 20 ),
             'offset_bottom'     => intval( $_POST['offset_bottom'] ?? 20 ),
             'show_labels'       => ! empty( $_POST['show_labels'] ) ? 1 : 0,
-            'carousel_interval' => max( 0.5, min( 10, floatval( str_replace( ',', '.', $_POST['carousel_interval'] ?? 1.5 ) ) ) ),
-            'animation'         => in_array( $_POST['animation'] ?? '', [ 'fade', 'slide' ] ) ? $_POST['animation'] : 'fade',
+            'carousel_interval' => max( 0.5, min( 10, floatval( str_replace( ',', '.', wp_unslash( $_POST['carousel_interval'] ?? 1.5 ) ) ) ) ),
+            'animation'         => in_array( wp_unslash( $_POST['animation'] ?? '' ), [ 'fade', 'slide' ] ) ? sanitize_key( wp_unslash( $_POST['animation'] ) ) : 'fade',
             'bubble_enabled'    => ! empty( $_POST['bubble_enabled'] ) ? 1 : 0,
             'bubble_text'       => sanitize_text_field( $_POST['bubble_text'] ?? '' ),
             'bubble_font_size'  => max( 10, min( 40, intval( $_POST['bubble_font_size'] ?? 15 ) ) ),
-            'bubble_delay'      => max( 0, floatval( str_replace( ',', '.', $_POST['bubble_delay'] ?? 3 ) ) ),
-            'language'          => in_array( $_POST['language'] ?? '', [ 'en', 'uk', 'ru' ] ) ? $_POST['language'] : 'en',
+            'bubble_delay'      => max( 0, floatval( str_replace( ',', '.', wp_unslash( $_POST['bubble_delay'] ?? 3 ) ) ) ),
+            'language'          => in_array( wp_unslash( $_POST['language'] ?? '' ), [ 'en', 'uk', 'ru' ] ) ? sanitize_key( wp_unslash( $_POST['language'] ) ) : 'en',
         ] );
         echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( sw_t( 'admin.settings_saved' ) ) . '</p></div>';
     }

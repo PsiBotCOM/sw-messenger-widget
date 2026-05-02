@@ -13,32 +13,54 @@ function sw_page_dashboard() {
         return;
     }
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
-    $total_views  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'view' ) );
-    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
-    $total_clicks = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'click' ) );
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $total_views = (int) wp_cache_get( 'scw_total_views' );
+    if ( false === $total_views ) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
+        $total_views = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'view' ) );
+        wp_cache_set( 'scw_total_views', $total_views, '', 300 );
+    }
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name built from $wpdb->prefix, safe
-    $clicks_by_messenger = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT messenger, COUNT(*) as cnt FROM `{$table}`
-             WHERE type = %s AND messenger IS NOT NULL AND messenger != ''
-             GROUP BY messenger ORDER BY cnt DESC",
-            'click'
-        ),
-        ARRAY_A
-    );
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $total_clicks = (int) wp_cache_get( 'scw_total_clicks' );
+    if ( false === $total_clicks ) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
+        $total_clicks = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE type = %s", 'click' ) );
+        wp_cache_set( 'scw_total_clicks', $total_clicks, '', 300 );
+    }
+
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $clicks_by_messenger = wp_cache_get( 'scw_clicks_by_messenger' );
+    if ( false === $clicks_by_messenger ) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
+        $clicks_by_messenger = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT messenger, COUNT(*) as cnt FROM `{$table}`
+                 WHERE type = %s AND messenger IS NOT NULL AND messenger != ''
+                 GROUP BY messenger ORDER BY cnt DESC",
+                'click'
+            ),
+            ARRAY_A
+        );
+        wp_cache_set( 'scw_clicks_by_messenger', $clicks_by_messenger, '', 300 );
+    }
 
     $since = gmdate( 'Y-m-d', strtotime( '-29 days' ) ) . ' 00:00:00';
-    $daily_rows = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT DATE(created_at) as day, type, COUNT(*) as cnt
-             FROM `{$table}` WHERE created_at >= %s
-             GROUP BY DATE(created_at), type ORDER BY day ASC",
-            $since
-        ),
-        ARRAY_A
-    );
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+    $daily_rows = wp_cache_get( 'scw_daily_rows' );
+    if ( false === $daily_rows ) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
+        $daily_rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT DATE(created_at) as day, type, COUNT(*) as cnt
+                 FROM `{$table}` WHERE created_at >= %s
+                 GROUP BY DATE(created_at), type ORDER BY day ASC",
+                $since
+            ),
+            ARRAY_A
+        );
+        wp_cache_set( 'scw_daily_rows', $daily_rows, '', 300 );
+    }
 
     $chart_data = [];
     for ( $i = 29; $i >= 0; $i-- ) {
@@ -87,13 +109,11 @@ function sw_page_dashboard() {
                     <?php foreach ( $chart_data as $day => $vals ) :
                         $v_px = (int) round( $vals['views']  / $max_val * $chart_max_px );
                         $c_px = (int) round( $vals['clicks'] / $max_val * $chart_max_px );
-                        $v_tip = esc_attr( sw_t( 'admin.views' )  . ': ' . $vals['views'] );
-                        $c_tip = esc_attr( sw_t( 'admin.clicks' ) . ': ' . $vals['clicks'] );
                     ?>
                     <div class="sw-chart-col">
                         <div class="sw-bar-pair">
-                            <div class="sw-bar sw-bar-v" style="height:<?php echo $v_px; ?>px" title="<?php echo $v_tip; ?>"></div>
-                            <div class="sw-bar sw-bar-c" style="height:<?php echo $c_px; ?>px" title="<?php echo $c_tip; ?>"></div>
+                            <div class="sw-bar sw-bar-v" style="height:<?php echo absint( $v_px ); ?>px" title="<?php echo esc_attr( sw_t( 'admin.views' ) . ': ' . $vals['views'] ); ?>"></div>
+                            <div class="sw-bar sw-bar-c" style="height:<?php echo absint( $c_px ); ?>px" title="<?php echo esc_attr( sw_t( 'admin.clicks' ) . ': ' . $vals['clicks'] ); ?>"></div>
                         </div>
                         <span class="sw-bar-label"><?php echo esc_html( gmdate( 'd.m', strtotime( $day ) ) ); ?></span>
                     </div>
@@ -129,7 +149,7 @@ function sw_page_dashboard() {
                 <div class="sw-ms-row">
                     <div class="sw-ms-icon"><?php echo wp_kses( $icon, $allowed_img ); ?></div>
                     <div class="sw-ms-name"><?php echo esc_html( $label ); ?></div>
-                    <div class="sw-ms-bar-wrap"><div class="sw-ms-bar" style="width:<?php echo $pct; ?>%"></div></div>
+                    <div class="sw-ms-bar-wrap"><div class="sw-ms-bar" style="width:<?php echo absint( $pct ); ?>%"></div></div>
                     <div class="sw-ms-count"><?php echo (int) $row['cnt']; ?></div>
                 </div>
                 <?php endforeach; ?>
