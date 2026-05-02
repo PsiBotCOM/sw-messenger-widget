@@ -10,6 +10,7 @@ function sw_page_settings() {
             'position'          => in_array( $_POST['position'] ?? '', [ 'left', 'right' ] ) ? $_POST['position'] : 'right',
             'offset_side'       => intval( $_POST['offset_side'] ?? 20 ),
             'offset_bottom'     => intval( $_POST['offset_bottom'] ?? 20 ),
+            'show_labels'       => ! empty( $_POST['show_labels'] ) ? 1 : 0,
             'carousel_interval' => max( 0.5, min( 10, floatval( str_replace( ',', '.', $_POST['carousel_interval'] ?? 1.5 ) ) ) ),
             'animation'         => in_array( $_POST['animation'] ?? '', [ 'fade', 'slide' ] ) ? $_POST['animation'] : 'fade',
             'bubble_enabled'    => ! empty( $_POST['bubble_enabled'] ) ? 1 : 0,
@@ -47,6 +48,13 @@ function sw_page_settings() {
                     </td></tr>
                     <tr><th><?php echo esc_html( sw_t( 'admin.offset_bottom' ) ); ?></th><td>
                         <input type="number" name="offset_bottom" value="<?php echo esc_attr( $g['offset_bottom'] ); ?>" min="0" max="200" class="small-text"> px
+                    </td></tr>
+                    <tr><th><?php echo esc_html( sw_t( 'admin.show_labels' ) ); ?></th><td>
+                        <label class="sw-toggle-label">
+                            <input type="checkbox" name="show_labels" value="1" <?php checked( $g['show_labels'], 1 ); ?>>
+                            <span class="sw-toggle-switch"></span>
+                            <span class="sw-toggle-text"><?php echo esc_html( sw_t( 'admin.show_labels_text' ) ); ?></span>
+                        </label>
                     </td></tr>
                 </table>
             </div>

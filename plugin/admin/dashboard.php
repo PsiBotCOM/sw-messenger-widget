@@ -51,7 +51,7 @@ function sw_page_dashboard() {
     }
 
     $chart_max_px = 100;
-    $messengers_config = sw_get_messengers_config();
+    $messengers_config = sw_default_messengers();
     ?>
     <div class="wrap sw-admin sw-dashboard">
         <h1><?php echo esc_html( sw_t( 'admin.dashboard_title' ) ); ?></h1>

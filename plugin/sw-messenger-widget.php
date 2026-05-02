@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Social Widget by psibot.com
+ * Plugin Name: Social Widget by obriiflow.com
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
- * Version:     1.0.2
- * Author:      psibot.com
- * Author URI:  https://psibot.com
+ * Version:     1.0.1
+ * Author:      obriiflow.com
+ * Author URI:  https://obriiflow.com
  * License:     GPL-2.0-or-later
  * Update URI: false
  * Text Domain: sw-messenger-widget
@@ -12,8 +12,8 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'SW_VERSION',         '1.0.2' );
-define( 'SW_DB_VERSION',      '1.0.2' );
+define( 'SW_VERSION',         '1.0.1' );
+define( 'SW_DB_VERSION',      '1.0.1' );
 define( 'SW_DIR',             plugin_dir_path( __FILE__ ) );
 define( 'SW_URL',             plugin_dir_url( __FILE__ ) );
 define( 'SW_OPT_GENERAL',    'sw_general_settings' );
@@ -99,19 +99,20 @@ function sw_render_widget() {
     $bubble_text   = esc_html( $g['bubble_text'] ?: sw_t( 'frontend.bubble_default' ) );
     $bubble_font_size = max( 10, min( 40, intval( $g['bubble_font_size'] ?? 15 ) ) );
     $bubble_on     = ! empty( $g['bubble_enabled'] );
+    $show_labels   = ! empty( $g['show_labels'] );
     $side_prop     = ( $position === 'left' ) ? 'left' : 'right';
     ?>
     <div id="sw-widget" data-position="<?php echo esc_attr( $position ); ?>"
          style="position:fixed;<?php echo esc_attr( $side_prop ); ?>:<?php echo $offset_side; ?>px;bottom:<?php echo $offset_bottom; ?>px;z-index:99999;display:flex;flex-direction:column;align-items:<?php echo $position === 'left' ? 'flex-start' : 'flex-end'; ?>;gap:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--sw-bubble-font-size:<?php echo $bubble_font_size; ?>px;">
 
-        <div id="sw-list" class="sw-list" aria-hidden="true">
+        <div id="sw-list" class="sw-list<?php echo $show_labels ? '' : ' sw-no-labels'; ?>" aria-hidden="true">
             <?php foreach ( $messengers as $m ) : ?>
             <a href="<?php echo esc_url( $m['url'] ); ?>" class="sw-item"
                data-messenger="<?php echo esc_attr( $m['key'] ?? '' ); ?>"
                target="_blank" rel="noopener noreferrer"
                aria-label="<?php echo esc_attr( $m['label'] ); ?>">
                 <span class="sw-item-icon"><?php echo sw_get_messenger_icon_html( $m, 'sw-icon-img', '' ); ?></span>
-                <span class="sw-item-label"><?php echo esc_html( $m['label'] ); ?></span>
+                <?php if ( $show_labels ) : ?><span class="sw-item-label"><?php echo esc_html( $m['label'] ); ?></span><?php endif; ?>
             </a>
             <?php endforeach; ?>
         </div>
@@ -209,6 +210,7 @@ function sw_get_general() {
         'position'          => 'right',
         'offset_side'       => 20,
         'offset_bottom'     => 20,
+        'show_labels'       => 1,
         'carousel_interval' => 1.5,
         'animation'         => 'fade',
         'bubble_enabled'    => 1,
@@ -219,25 +221,21 @@ function sw_get_general() {
     ] );
 }
 
-function sw_get_messengers_config() {
-    $defaults = sw_default_messengers();
-    $saved    = get_option( SW_OPT_MESSENGERS, [] );
-    foreach ( $defaults as $key => &$def ) {
-        $def['key'] = $key;
-        if ( isset( $saved[ $key ] ) ) {
-            $def['enabled'] = ! empty( $saved[ $key ]['enabled'] );
-            $def['url']     = $saved[ $key ]['url'] ?? '';
-            $def['order']   = isset( $saved[ $key ]['order'] ) ? intval( $saved[ $key ]['order'] ) : $def['order'];
-        }
-    }
-    return $defaults;
-}
-
 function sw_get_active_messengers() {
-    $all    = sw_get_messengers_config();
-    $active = array_filter( $all, fn( $m ) => ! empty( $m['enabled'] ) && ! empty( $m['url'] ) );
-    usort( $active, fn( $a, $b ) => $a['order'] <=> $b['order'] );
-    return array_values( $active );
+    $list     = get_option( SW_OPT_MESSENGERS, [] );
+    $defaults = sw_default_messengers();
+    $active   = [];
+    foreach ( $list as $entry ) {
+        $key = $entry['key'] ?? '';
+        if ( ! $key || empty( $entry['url'] ) || ! isset( $defaults[ $key ] ) ) continue;
+        $active[] = [
+            'key'      => $key,
+            'label'    => ( $entry['label'] ?? '' ) !== '' ? $entry['label'] : $defaults[ $key ]['label'],
+            'url'      => $entry['url'],
+            'icon_url' => $defaults[ $key ]['icon_url'],
+        ];
+    }
+    return $active;
 }
 
 function sw_get_messenger_icon_html( $messenger, $class = 'sw-icon-img', $alt = null ) {
@@ -271,6 +269,7 @@ function sw_default_messengers() {
         'twitter'   => [ 'label' => 'X / Twitter', 'order' => 8  ],
         'linkedin'  => [ 'label' => 'LinkedIn',    'order' => 9  ],
         'email'     => [ 'label' => 'Email',       'order' => 10 ],
+        'youtube'   => [ 'label' => 'YouTube',     'order' => 11 ],
     ];
 
     foreach ( $items as $key => &$item ) {
@@ -299,7 +298,9 @@ function sw_install_db() {
 ) {$charset};" );
     update_option( 'sw_db_version', SW_DB_VERSION );
     if ( false === get_option( SW_OPT_GENERAL ) )    add_option( SW_OPT_GENERAL, [] );
-    if ( false === get_option( SW_OPT_MESSENGERS ) ) add_option( SW_OPT_MESSENGERS, [] );
+    if ( false === get_option( SW_OPT_MESSENGERS ) ) add_option( SW_OPT_MESSENGERS, [
+        [ 'key' => 'telegram', 'label' => 'Telegram', 'url' => '' ],
+    ] );
 }
 
 // Runs on every load — creates/upgrades the table when version changes
