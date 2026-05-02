@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Social Connect Widget
+ * Plugin Name: ObriiFlow Social Widget
  * Plugin URI:  https://obriiflow.com/plugin/
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
  * Version:     1.0.1
@@ -8,7 +8,7 @@
  * Author URI:  https://obriiflow.com
  * License:     GPL-2.0-or-later
  * Update URI: false
- * Text Domain: social-connect-widget
+ * Text Domain: obriiflow-social-widget
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -28,10 +28,10 @@ if ( is_admin() ) {
 }
 
 function sw_register_menu() {
-    add_menu_page( sw_t( 'admin.menu_title' ), sw_t( 'admin.menu_title' ), 'manage_options', 'social-connect-widget', 'sw_page_dashboard', 'dashicons-share', 80 );
-    add_submenu_page( 'social-connect-widget', sw_t( 'admin.dashboard' ),  sw_t( 'admin.dashboard' ),  'manage_options', 'social-connect-widget',           'sw_page_dashboard' );
-    add_submenu_page( 'social-connect-widget', sw_t( 'admin.messengers' ), sw_t( 'admin.messengers' ), 'manage_options', 'social-connect-widget-messengers', 'sw_page_messengers' );
-    add_submenu_page( 'social-connect-widget', sw_t( 'admin.settings' ),   sw_t( 'admin.settings' ),   'manage_options', 'social-connect-widget-settings',   'sw_page_settings' );
+    add_menu_page( sw_t( 'admin.menu_title' ), sw_t( 'admin.menu_title' ), 'manage_options', 'obriiflow-social-widget', 'sw_page_dashboard', 'dashicons-share', 80 );
+    add_submenu_page( 'obriiflow-social-widget', sw_t( 'admin.dashboard' ),  sw_t( 'admin.dashboard' ),  'manage_options', 'obriiflow-social-widget',           'sw_page_dashboard' );
+    add_submenu_page( 'obriiflow-social-widget', sw_t( 'admin.messengers' ), sw_t( 'admin.messengers' ), 'manage_options', 'obriiflow-social-widget-messengers', 'sw_page_messengers' );
+    add_submenu_page( 'obriiflow-social-widget', sw_t( 'admin.settings' ),   sw_t( 'admin.settings' ),   'manage_options', 'obriiflow-social-widget-settings',   'sw_page_settings' );
 }
 
 /* ── AJAX Tracking ── */
@@ -149,9 +149,9 @@ function sw_enqueue() {
     $css_version = file_exists( SW_DIR . 'assets/widget.css' ) ? filemtime( SW_DIR . 'assets/widget.css' ) : SW_VERSION;
     $js_version  = file_exists( SW_DIR . 'assets/widget.js' ) ? filemtime( SW_DIR . 'assets/widget.js' ) : SW_VERSION;
 
-    wp_enqueue_style(  'social-connect-widget', SW_URL . 'assets/widget.css', [], $css_version );
-    wp_enqueue_script( 'social-connect-widget', SW_URL . 'assets/widget.js',  [], $js_version, true );
-    wp_localize_script( 'social-connect-widget', 'SW_CONFIG', [
+    wp_enqueue_style(  'obriiflow-social-widget', SW_URL . 'assets/widget.css', [], $css_version );
+    wp_enqueue_script( 'obriiflow-social-widget', SW_URL . 'assets/widget.js',  [], $js_version, true );
+    wp_localize_script( 'obriiflow-social-widget', 'SW_CONFIG', [
         'carousel_interval' => (float) ( $g['carousel_interval'] ?? 1.5 ) * 1000,
         'animation'         => $g['animation'] ?? 'fade',
         'position'          => $g['position'] ?? 'right',

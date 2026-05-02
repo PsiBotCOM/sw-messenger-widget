@@ -1,4 +1,4 @@
-=== Social Connect Widget ===
+=== ObriiFlow Social Widget ===
 Contributors: obriiflow
 Tags: messenger, social, whatsapp, telegram, widget
 Requires at least: 5.9
@@ -12,7 +12,7 @@ Floating social messenger widget with icon carousel, greeting bubble, click stat
 
 == Description ==
 
-**Social Connect Widget** adds a floating button to your site that cycles through your social messenger icons in a carousel. Visitors click to open a list of all your social links in one place.
+**ObriiFlow Social Widget** adds a floating button to your site that cycles through your social messenger icons in a carousel. Visitors click to open a list of all your social links in one place.
 
 **Key features:**
 
