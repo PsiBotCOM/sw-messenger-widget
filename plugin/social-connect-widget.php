@@ -121,7 +121,7 @@ function sw_render_widget() {
         <div class="sw-launcher">
             <?php if ( $bubble_on ) : ?>
             <div id="sw-bubble" class="sw-bubble" style="display:none;">
-                <span><?php echo $bubble_text; ?></span>
+                <span><?php echo esc_html( $g['bubble_text'] ?: sw_t( 'frontend.bubble_default' ) ); ?></span>
             </div>
             <?php endif; ?>
 
