@@ -6,9 +6,13 @@ function sw_page_messengers() {
 
     if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['sw_messengers_nonce'] ) ), 'sw_save_messengers' ) ) {
         $defaults = sw_default_messengers();
-        $posted   = isset( $_POST['messengers'] ) ? array_map( 'sanitize_text_field', wp_unslash( (array) $_POST['messengers'] ) ) : [];
+        $posted   = isset( $_POST['messengers'] ) ? wp_unslash( (array) $_POST['messengers'] ) : [];
         $save     = [];
         foreach ( $posted as $entry ) {
+            if ( ! is_array( $entry ) ) {
+                continue;
+            }
+
             $key   = sanitize_key( $entry['key'] ?? '' );
             $label = sanitize_text_field( $entry['label'] ?? '' );
             $url   = sanitize_text_field( $entry['url'] ?? '' );
