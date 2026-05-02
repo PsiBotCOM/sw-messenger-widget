@@ -1,6 +1,7 @@
 <?php
 /**
  * Plugin Name: Social Connect Widget
+ * Plugin URI:  https://obriiflow.com/plugin/
  * Description: Floating social messenger widget with carousel, bubble, and full admin panel.
  * Version:     1.0.1
  * Author:      obriiflow.com

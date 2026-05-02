@@ -12,7 +12,7 @@ Floating social messenger widget with icon carousel, greeting bubble, click stat
 
 == Description ==
 
-**Social Messenger Widget** adds a floating button to your site that cycles through your social messenger icons in a carousel. Visitors click to open a list of all your social links in one place.
+**Social Connect Widget** adds a floating button to your site that cycles through your social messenger icons in a carousel. Visitors click to open a list of all your social links in one place.
 
 **Key features:**
 
