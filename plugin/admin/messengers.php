@@ -4,9 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 function sw_page_messengers() {
     if ( ! current_user_can( 'manage_options' ) ) return;
 
-    if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( wp_unslash( $_POST['sw_messengers_nonce'] ), 'sw_save_messengers' ) ) {
+    if ( isset( $_POST['sw_messengers_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['sw_messengers_nonce'] ) ), 'sw_save_messengers' ) ) {
         $defaults = sw_default_messengers();
-        $posted   = isset( $_POST['messengers'] ) ? wp_unslash( $_POST['messengers'] ) : [];
+        $posted   = isset( $_POST['messengers'] ) ? array_map( 'sanitize_text_field', wp_unslash( (array) $_POST['messengers'] ) ) : [];
         $save     = [];
         foreach ( $posted as $entry ) {
             $key   = sanitize_key( $entry['key'] ?? '' );

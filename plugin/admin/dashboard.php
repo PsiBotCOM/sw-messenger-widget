@@ -5,8 +5,9 @@ function sw_page_dashboard() {
     if ( ! current_user_can( 'manage_options' ) ) return;
 
     global $wpdb;
-    $table = $wpdb->prefix . 'sw_stats';
+    $table = $wpdb->prefix . 'sw_stats'; // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table uses $wpdb->prefix only, safe
 
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- stats table query, caching not appropriate for real-time data
     if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
         echo '<div class="wrap"><h1>' . esc_html( sw_t( 'admin.dashboard_title' ) ) . '</h1>';
         echo '<div class="notice notice-error"><p>' . esc_html( sw_t( 'admin.stats_table_missing' ) ) . '</p></div></div>';
@@ -34,6 +35,7 @@ function sw_page_dashboard() {
     if ( false === $clicks_by_messenger ) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
         $clicks_by_messenger = $wpdb->get_results(
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table uses $wpdb->prefix only, safe
             $wpdb->prepare(
                 "SELECT messenger, COUNT(*) as cnt FROM `{$table}`
                  WHERE type = %s AND messenger IS NOT NULL AND messenger != ''
@@ -51,6 +53,7 @@ function sw_page_dashboard() {
     if ( false === $daily_rows ) {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is built from $wpdb->prefix only, safe
         $daily_rows = $wpdb->get_results(
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table uses $wpdb->prefix only, safe
             $wpdb->prepare(
                 "SELECT DATE(created_at) as day, type, COUNT(*) as cnt
                  FROM `{$table}` WHERE created_at >= %s

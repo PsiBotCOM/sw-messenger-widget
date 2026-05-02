@@ -45,6 +45,7 @@ function sw_ajax_track() {
     global $wpdb;
     $table = $wpdb->prefix . 'sw_stats';
 
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- AJAX tracking insert, caching not applicable
     if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
         wp_die( '0' );
     }
@@ -56,6 +57,7 @@ function sw_ajax_track() {
 
     if ( ! $type ) wp_die( '0' );
 
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- AJAX tracking insert, caching not applicable
     $wpdb->insert(
         $table,
         [
