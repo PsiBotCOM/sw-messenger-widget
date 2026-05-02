@@ -16,13 +16,13 @@ Floating social messenger widget with icon carousel, greeting bubble, click stat
 
 **Key features:**
 
-* 🔄 Icon carousel — cycles through all active messengers automatically
-* 💬 Greeting bubble — customizable text bubble with delay timer
-* 📊 Built-in stats — tracks widget views and clicks per messenger
-* 🎨 Admin panel — manage messengers, reorder via drag & drop
-* 📍 Position control — left or right, with custom px offsets
-* 🌐 Multilingual — English, Ukrainian, Russian interface
-* ✅ Supports: Instagram, Telegram, WhatsApp, Viber, Messenger, Facebook, TikTok, X/Twitter, LinkedIn, YouTube, Email
+* Icon carousel — cycles through all active messengers automatically
+* Greeting bubble — customizable text bubble with delay timer
+* Built-in stats — tracks widget views and clicks per messenger
+* Admin panel — manage messengers, reorder via drag & drop
+* Position control — left or right, with custom px offsets
+* Multilingual — English, Ukrainian, Russian interface
+* Supports: Instagram, Telegram, WhatsApp, Viber, Messenger, Facebook, TikTok, X/Twitter, LinkedIn, YouTube, Email
 
 No coding required. Works with any theme.
 
