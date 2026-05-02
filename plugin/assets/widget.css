@@ -80,13 +80,20 @@
     pointer-events: none;
 }
 #sw-widget[data-position="left"] .sw-list { align-items: flex-start; }
+.sw-widget-no-labels {
+    width: 60px;
+    align-items: center !important;
+}
 .sw-widget-no-labels .sw-list,
 .sw-widget-no-labels .sw-launcher {
     align-self: center;
+    width: 60px;
 }
 .sw-widget-no-labels .sw-list {
-    width: 60px;
     align-items: center;
+}
+.sw-widget-no-labels .sw-launcher {
+    justify-content: center;
 }
 
 .sw-item {
