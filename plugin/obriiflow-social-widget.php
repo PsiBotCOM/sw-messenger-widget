@@ -319,7 +319,12 @@ function sw_install_db() {
   KEY type_created (type,created_at)
 ) {$charset};" );
     update_option( 'sw_db_version', SW_DB_VERSION );
-    if ( false === get_option( SW_OPT_GENERAL ) )    add_option( SW_OPT_GENERAL, [] );
+    if ( false === get_option( SW_OPT_GENERAL ) ) {
+        $locale    = get_locale();
+        $auto_lang = ( 0 === strpos( $locale, 'uk' ) ) ? 'uk'
+                   : ( ( 0 === strpos( $locale, 'ru' ) ) ? 'ru' : 'en' );
+        add_option( SW_OPT_GENERAL, [ 'language' => $auto_lang ] );
+    }
     if ( false === get_option( SW_OPT_MESSENGERS ) ) add_option( SW_OPT_MESSENGERS, [
         [ 'key' => 'telegram', 'label' => 'Telegram', 'url' => '' ],
     ] );
